@@ -41,6 +41,10 @@ pnpm install
 pnpm dev
 ```
 
+## Environment variables
+
+See [docs/environment-variables.md](./docs/environment-variables.md).
+
 ## Verification
 
 ```bash

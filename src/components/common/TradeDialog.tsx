@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { formatNumber } from '@/utils/numberFormat.utils';
-import { formatDisplayKeyPrice } from '@/utils/keyPriceDisplay.utils';
+import { formatDisplayKeyPrice, estimateSellProceeds } from '@/utils/keyPriceDisplay.utils';
 import PercentageBadge from '@/components/common/PercentageBadge';
 import NetworkFeeHint from '@/components/common/NetworkFeeHint';
 import { TRADE_FEE_ESTIMATE } from '@/constants/fees';
@@ -27,6 +27,8 @@ export interface TradeDialogProps {
 	availableHoldings: number;
 	/** Per-key price in stroops, shown on the buy confirmation step. */
 	keyPriceStroops?: number | null;
+	/** Current key supply for estimating sell proceeds. */
+	currentSupply?: number | null;
 	onOpenChange: (open: boolean) => void;
 	onConfirm: (amount: number) => Promise<void> | void;
 	isSubmitting?: boolean;
@@ -38,6 +40,7 @@ const TradeDialog: React.FC<TradeDialogProps> = ({
 	creatorName,
 	availableHoldings,
 	keyPriceStroops,
+	currentSupply,
 	onOpenChange,
 	onConfirm,
 	isSubmitting = false,
@@ -89,6 +92,13 @@ const TradeDialog: React.FC<TradeDialogProps> = ({
 		TRADE_FEE_ESTIMATE.DEFAULT_NETWORK_FEE,
 		{ unit: TRADE_FEE_ESTIMATE.UNIT }
 	);
+
+	const estimatedProceedsStroops = useMemo(() => {
+		if (side !== 'sell' || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+			return null;
+		}
+		return estimateSellProceeds(keyPriceStroops, currentSupply, parsedAmount);
+	}, [side, keyPriceStroops, currentSupply, parsedAmount]);
 
 	return (
 		<Dialog
@@ -188,6 +198,20 @@ const TradeDialog: React.FC<TradeDialogProps> = ({
 							fee={estimatedNetworkFee}
 							className="text-white/45"
 						/>
+					)}
+					{side === 'sell' && (
+						<div className="text-xs text-white/45 mt-2">
+							{estimatedProceedsStroops != null ? (
+								<>
+									Estimated proceeds (approximate):{' '}
+									<span className="font-semibold text-amber-300/90 tabular-nums">
+										{formatDisplayKeyPrice(estimatedProceedsStroops)}
+									</span>
+								</>
+							) : (
+								<>Estimated proceeds unavailable</>
+							)}
+						</div>
 					)}
 				</div>
 

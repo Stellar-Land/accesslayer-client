@@ -13,22 +13,22 @@ All marketing page copy is in a single file:
 The page is a single React component. Each visible section is a block of JSX
 with inline text. Use the table below to find the section you want to change.
 
-| Visible section on the page | Location in `MarketingPage.tsx` | What to look for |
-| --- | --- | --- |
-| Page title ("Access Layer") | Hero / Title | `<h1>` with the `Access Layer` heading |
-| Intro paragraph under the title | Intro | First `<p>` after the title |
-| **The idea** | `{/* The idea */}` section | Eyebrow text `The idea` and the two body paragraphs below it |
-| **How it works** | `{/* How it works */}` section | Eyebrow text `How it works` and the two body paragraphs below it |
-| **What makes it different** | `{/* What makes it different */}` section | Eyebrow text `What makes it different` and the body paragraph below it |
-| **Built on Stellar** | `{/* Built on Stellar */}` section | Eyebrow text `Built on Stellar` and the two body paragraphs below it |
-| **Join the community** | `{/* Community */}` section | Eyebrow text `Join the community`, the subtitle, and the GitHub/Telegram links |
-| Footer | `{/* Footer */}` section | Logo label and the "Built on Stellar" tagline |
+| Visible section on the page     | Location in `MarketingPage.tsx`           | What to look for                                                               |
+| ------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------ |
+| Page title ("Access Layer")     | Hero / Title                              | `<h1>` with the `Access Layer` heading                                         |
+| Intro paragraph under the title | Intro                                     | First `<p>` after the title                                                    |
+| **The idea**                    | `{/* The idea */}` section                | Eyebrow text `The idea` and the two body paragraphs below it                   |
+| **How it works**                | `{/* How it works */}` section            | Eyebrow text `How it works` and the two body paragraphs below it               |
+| **What makes it different**     | `{/* What makes it different */}` section | Eyebrow text `What makes it different` and the body paragraph below it         |
+| **Built on Stellar**            | `{/* Built on Stellar */}` section        | Eyebrow text `Built on Stellar` and the two body paragraphs below it           |
+| **Join the community**          | `{/* Community */}` section               | Eyebrow text `Join the community`, the subtitle, and the GitHub/Telegram links |
+| Footer                          | `{/* Footer */}` section                  | Logo label and the "Built on Stellar" tagline                                  |
 
 Section eyebrows use this pattern — a short uppercase label in blue:
 
 ```tsx
 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-blue-400">
-  The idea
+	The idea
 </p>
 ```
 

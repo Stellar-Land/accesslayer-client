@@ -6,11 +6,11 @@ The client is built with Vite, so any value that must be available in browser co
 
 ## Files involved
 
-| File | Purpose |
-| --- | --- |
-| `.env.example` | Documents every supported variable and provides safe local defaults or blank optional placeholders. |
+| File                     | Purpose                                                                                                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `.env.example`           | Documents every supported variable and provides safe local defaults or blank optional placeholders.              |
 | `src/utils/env.utils.ts` | Validates environment variables at startup with Zod and exports the typed `env` object used by application code. |
-| `.env` | Local developer overrides. This file should not be committed. |
+| `.env`                   | Local developer overrides. This file should not be committed.                                                    |
 
 ## Add a new variable
 
@@ -37,22 +37,22 @@ All supported variables should be declared in `src/utils/env.utils.ts` so missin
 
 ```ts
 const envSchema = z.object({
-  VITE_ENABLE_CREATOR_DISCOVERY: z.coerce.boolean().default(false),
+	VITE_ENABLE_CREATOR_DISCOVERY: z.coerce.boolean().default(false),
 });
 
 export const env = envSchema.parse({
-  VITE_ENABLE_CREATOR_DISCOVERY: import.meta.env.VITE_ENABLE_CREATOR_DISCOVERY,
+	VITE_ENABLE_CREATOR_DISCOVERY: import.meta.env.VITE_ENABLE_CREATOR_DISCOVERY,
 });
 ```
 
 Use the Zod type that matches how the app consumes the value:
 
-| Value type | Validation example |
-| --- | --- |
+| Value type      | Validation example                              |
+| --------------- | ----------------------------------------------- |
 | Required string | `z.string().min(1, "VITE_API_KEY is required")` |
-| Optional string | `z.string().optional()` |
-| Number | `z.coerce.number().default(84532)` |
-| Boolean flag | `z.coerce.boolean().default(false)` |
+| Optional string | `z.string().optional()`                         |
+| Number          | `z.coerce.number().default(84532)`              |
+| Boolean flag    | `z.coerce.boolean().default(false)`             |
 
 If a value is required for the app to start, avoid a silent fallback. Use `.min(1, "... is required")` or another explicit validation rule so the startup error points to the missing variable.
 
@@ -61,10 +61,10 @@ If a value is required for the app to start, avoid a silent fallback. Use `.min(
 Import `env` from the validation module and read the typed value from there:
 
 ```ts
-import { env } from "@/utils/env.utils";
+import { env } from '@/utils/env.utils';
 
 if (env.VITE_ENABLE_CREATOR_DISCOVERY) {
-  // Render or enable the feature.
+	// Render or enable the feature.
 }
 ```
 
@@ -82,7 +82,7 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL;
 Direct access bypasses schema validation, makes defaults inconsistent, and spreads environment knowledge across the app. Use `env` instead:
 
 ```tsx
-import { env } from "@/utils/env.utils";
+import { env } from '@/utils/env.utils';
 
 const backendUrl = env.VITE_BACKEND_URL;
 ```

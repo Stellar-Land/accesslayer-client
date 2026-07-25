@@ -23,6 +23,8 @@ export interface Course {
 	joinedAt?: string;
 	/** Whether this creator is pinned in the marketplace list. */
 	isPinned?: boolean;
+	/** Last up to 7 price history points in stroops, oldest to newest. */
+	priceHistory?: number[];
 }
 
 export type CourseSortOption =

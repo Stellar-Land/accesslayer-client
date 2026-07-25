@@ -9,6 +9,7 @@ This design covers the test infrastructure and minimal production code change ne
 The production change is small and surgical: extract the holder count value into a `useCreatorHolderCount` custom hook backed by `useQuery`. This makes the component's data dependency explicit and directly testable via React Query's cache API. The integration test then wraps the component with a fresh `QueryClientProvider`, pre-seeds the cache, invalidates the query key, and asserts the updated count appears.
 
 **Key constraints:**
+
 - The test must confirm the update happens within the same mounted component instance (no remount).
 - Each test uses a fresh `QueryClient` instance to prevent inter-test cache contamination.
 - No production network layer (`courseService`) is imported in the test file; all I/O is replaced by `vi.fn()` stubs.
@@ -58,9 +59,9 @@ The existing `LandingPage.tsx` continues to work unchanged for users — it rend
 import { useQuery } from '@tanstack/react-query';
 
 export interface HolderCountResult {
-  count: number | null;
-  isLoading: boolean;
-  isError: boolean;
+	count: number | null;
+	isLoading: boolean;
+	isError: boolean;
 }
 
 /**
@@ -71,20 +72,20 @@ export interface HolderCountResult {
  * without module-level vi.mock() patching.
  */
 export function useCreatorHolderCount(
-  creatorId: string,
-  fetchHolderCount: (id: string) => Promise<number | null>
+	creatorId: string,
+	fetchHolderCount: (id: string) => Promise<number | null>
 ): HolderCountResult {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['creator', creatorId, 'holderCount'],
-    queryFn: () => fetchHolderCount(creatorId),
-    staleTime: 30_000,
-  });
+	const { data, isLoading, isError } = useQuery({
+		queryKey: ['creator', creatorId, 'holderCount'],
+		queryFn: () => fetchHolderCount(creatorId),
+		staleTime: 30_000,
+	});
 
-  return {
-    count: data ?? null,
-    isLoading,
-    isError,
-  };
+	return {
+		count: data ?? null,
+		isLoading,
+		isError,
+	};
 }
 ```
 
@@ -131,30 +132,30 @@ The existing inline function in `LandingPage.tsx` is moved to a shared utility s
 import { formatCompactNumber } from '@/utils/numberFormat.utils';
 
 export interface HolderCountCopy {
-  value: string;
-  explanation: string;
+	value: string;
+	explanation: string;
 }
 
 export function getFeaturedCreatorKeyHolderCopy(
-  count: number | null | undefined
+	count: number | null | undefined
 ): HolderCountCopy {
-  if (count == null) {
-    return {
-      value: 'Key holders unavailable',
-      explanation: 'Key holder data is not available yet.',
-    };
-  }
-  if (count === 0) {
-    return {
-      value: 'No key holders yet',
-      explanation:
-        'This creator has not unlocked any key holders yet. Be the first to buy a key and start the collector base.',
-    };
-  }
-  return {
-    value: `${formatCompactNumber(count)} key holders`,
-    explanation: 'Number of wallets that currently hold at least one key.',
-  };
+	if (count == null) {
+		return {
+			value: 'Key holders unavailable',
+			explanation: 'Key holder data is not available yet.',
+		};
+	}
+	if (count === 0) {
+		return {
+			value: 'No key holders yet',
+			explanation:
+				'This creator has not unlocked any key holders yet. Be the first to buy a key and start the collector base.',
+		};
+	}
+	return {
+		value: `${formatCompactNumber(count)} key holders`,
+		explanation: 'Number of wallets that currently hold at least one key.',
+	};
 }
 ```
 
@@ -217,8 +218,8 @@ Pre-seeding in tests uses `queryClient.setQueryData`:
 
 ```typescript
 queryClient.setQueryData(
-  ['creator', CREATOR_ID, 'holderCount'],
-  initialCount  // number | null
+	['creator', CREATOR_ID, 'holderCount'],
+	initialCount // number | null
 );
 ```
 
@@ -232,7 +233,7 @@ const mockFetchHolderCount = vi.fn<(id: string) => Promise<number | null>>();
 
 ## Correctness Properties
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+_A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
 
 The project already has `fast-check` installed as a dev dependency (`"fast-check": "^4.6.0"` in `package.json`), which will be used for all property-based tests below. Each property test runs a minimum of 100 iterations.
 
@@ -240,7 +241,7 @@ The project already has `fast-check` installed as a dev dependency (`"fast-check
 
 ### Property 1: Initial render round-trip
 
-*For any* non-negative integer `initialCount`, when the React Query cache is pre-seeded with that count and the component renders without a network call, the DOM shall display exactly the string `getFeaturedCreatorKeyHolderCopy(initialCount).value`.
+_For any_ non-negative integer `initialCount`, when the React Query cache is pre-seeded with that count and the component renders without a network call, the DOM shall display exactly the string `getFeaturedCreatorKeyHolderCopy(initialCount).value`.
 
 **Validates: Requirements 1.1, 5.4**
 
@@ -248,7 +249,7 @@ The project already has `fast-check` installed as a dev dependency (`"fast-check
 
 ### Property 2: Stale-while-revalidate display stability
 
-*For any* non-negative integer `initialCount`, while the invalidation-triggered refetch is in-flight (the mock fetch has not yet resolved), the DOM shall continue to display the formatted string derived from `initialCount` and shall not show a blank value or an error state.
+_For any_ non-negative integer `initialCount`, while the invalidation-triggered refetch is in-flight (the mock fetch has not yet resolved), the DOM shall continue to display the formatted string derived from `initialCount` and shall not show a blank value or an error state.
 
 **Validates: Requirements 2.3**
 
@@ -256,7 +257,7 @@ The project already has `fast-check` installed as a dev dependency (`"fast-check
 
 ### Property 3: Post-invalidation update round-trip
 
-*For any* pair of distinct non-negative integers `(initialCount, updatedCount)`, after the cache is pre-seeded with `initialCount`, `queryClient.invalidateQueries` is called, and the mock refetch resolves with `updatedCount`, the DOM shall display `getFeaturedCreatorKeyHolderCopy(updatedCount).value`, shall no longer display `getFeaturedCreatorKeyHolderCopy(initialCount).value`, and this transition shall occur within the same mounted component instance (no unmount–remount cycle).
+_For any_ pair of distinct non-negative integers `(initialCount, updatedCount)`, after the cache is pre-seeded with `initialCount`, `queryClient.invalidateQueries` is called, and the mock refetch resolves with `updatedCount`, the DOM shall display `getFeaturedCreatorKeyHolderCopy(updatedCount).value`, shall no longer display `getFeaturedCreatorKeyHolderCopy(initialCount).value`, and this transition shall occur within the same mounted component instance (no unmount–remount cycle).
 
 **Validates: Requirements 3.1, 3.2, 3.4**
 
@@ -264,7 +265,7 @@ The project already has `fast-check` installed as a dev dependency (`"fast-check
 
 ### Property 4: Format function round-trip
 
-*For any* non-negative integer `n`, the string `getFeaturedCreatorKeyHolderCopy(n).value` shall equal `"No key holders yet"` when `n === 0`, or `formatCompactNumber(n) + " key holders"` when `n > 0` — and this value shall be identical to what the `FeaturedCreatorAudienceChip` renders in the DOM when seeded with `n`.
+_For any_ non-negative integer `n`, the string `getFeaturedCreatorKeyHolderCopy(n).value` shall equal `"No key holders yet"` when `n === 0`, or `formatCompactNumber(n) + " key holders"` when `n > 0` — and this value shall be identical to what the `FeaturedCreatorAudienceChip` renders in the DOM when seeded with `n`.
 
 **Validates: Requirements 5.1, 5.4**
 
@@ -272,13 +273,13 @@ The project already has `fast-check` installed as a dev dependency (`"fast-check
 
 ## Error Handling
 
-| Scenario | Behavior |
-|---|---|
-| `fetchHolderCount` rejects | `useCreatorHolderCount` returns `isError: true`, `count: null`; chip displays `"Key holders unavailable"` |
-| `count` is `null` from fetch | Chip displays `"Key holders unavailable"` |
-| `count` is `0` | Chip displays `"No key holders yet"` |
-| `queryClient.invalidateQueries` with non-matching key | No refetch triggered; mock fetch not called; display unchanged |
-| Network timeout during test | Controlled by mock — test resolves or rejects on demand |
+| Scenario                                              | Behavior                                                                                                  |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `fetchHolderCount` rejects                            | `useCreatorHolderCount` returns `isError: true`, `count: null`; chip displays `"Key holders unavailable"` |
+| `count` is `null` from fetch                          | Chip displays `"Key holders unavailable"`                                                                 |
+| `count` is `0`                                        | Chip displays `"No key holders yet"`                                                                      |
+| `queryClient.invalidateQueries` with non-matching key | No refetch triggered; mock fetch not called; display unchanged                                            |
+| Network timeout during test                           | Controlled by mock — test resolves or rejects on demand                                                   |
 
 The hook does not implement retry logic beyond React Query's defaults (`retry: 3`). For tests, retry is disabled (`retry: false` on the test-scoped `QueryClient`) to keep assertions deterministic.
 
@@ -311,15 +312,15 @@ let queryClient: QueryClient;
 let mockFetchHolderCount: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
-  // Fresh QueryClient per test — retry disabled for determinism
-  queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  mockFetchHolderCount = vi.fn();
+	// Fresh QueryClient per test — retry disabled for determinism
+	queryClient = new QueryClient({
+		defaultOptions: { queries: { retry: false } },
+	});
+	mockFetchHolderCount = vi.fn();
 });
 
 afterEach(() => {
-  queryClient.clear();
+	queryClient.clear();
 });
 ```
 
@@ -398,27 +399,27 @@ it('displays the updated count after invalidation with the same component instan
 ```typescript
 // Property 4: Format function round-trip (pure function — no render needed)
 it('getFeaturedCreatorKeyHolderCopy produces the correct format for all non-negative integers', () => {
-  fc.assert(
-    fc.property(fc.integer({ min: 1, max: 10_000_000 }), count => {
-      // Feature: holder-count-cache-invalidation-test, Property 4:
-      // For any positive integer n, value === formatCompactNumber(n) + " key holders"
-      const { value } = getFeaturedCreatorKeyHolderCopy(count);
-      expect(value).toBe(`${formatCompactNumber(count)} key holders`);
-    }),
-    { numRuns: 200 }
-  );
+	fc.assert(
+		fc.property(fc.integer({ min: 1, max: 10_000_000 }), count => {
+			// Feature: holder-count-cache-invalidation-test, Property 4:
+			// For any positive integer n, value === formatCompactNumber(n) + " key holders"
+			const { value } = getFeaturedCreatorKeyHolderCopy(count);
+			expect(value).toBe(`${formatCompactNumber(count)} key holders`);
+		}),
+		{ numRuns: 200 }
+	);
 });
 ```
 
 ### Edge-case and example tests
 
-| Test | Classification | Key assertion |
-|---|---|---|
-| `count = 0` renders "No key holders yet" | EDGE_CASE | `screen.getByText('No key holders yet')` |
-| `count = null` renders "Key holders unavailable" | EDGE_CASE | `screen.getByText('Key holders unavailable')` |
-| Non-matching query key does not call mockFetch | EDGE_CASE | `expect(mockFetchHolderCount).not.toHaveBeenCalled()` |
-| Seeded cache — mock fetch call count is zero | EXAMPLE | `expect(mockFetchHolderCount).not.toHaveBeenCalled()` |
-| Mock fetch called exactly once after invalidation | EXAMPLE | `expect(mockFetchHolderCount).toHaveBeenCalledTimes(1)` with `CREATOR_ID` |
+| Test                                              | Classification | Key assertion                                                             |
+| ------------------------------------------------- | -------------- | ------------------------------------------------------------------------- |
+| `count = 0` renders "No key holders yet"          | EDGE_CASE      | `screen.getByText('No key holders yet')`                                  |
+| `count = null` renders "Key holders unavailable"  | EDGE_CASE      | `screen.getByText('Key holders unavailable')`                             |
+| Non-matching query key does not call mockFetch    | EDGE_CASE      | `expect(mockFetchHolderCount).not.toHaveBeenCalled()`                     |
+| Seeded cache — mock fetch call count is zero      | EXAMPLE        | `expect(mockFetchHolderCount).not.toHaveBeenCalled()`                     |
+| Mock fetch called exactly once after invalidation | EXAMPLE        | `expect(mockFetchHolderCount).toHaveBeenCalledTimes(1)` with `CREATOR_ID` |
 
 ### Vitest configuration
 
@@ -428,7 +429,10 @@ No changes needed to `vitest.config.ts` — existing `jsdom` environment and `@t
 
 ```typescript
 vi.mock('@/hooks/useNetworkMismatch', () => ({
-  useNetworkMismatch: () => ({ isMismatch: false, expectedChainName: 'Stellar Testnet' }),
+	useNetworkMismatch: () => ({
+		isMismatch: false,
+		expectedChainName: 'Stellar Testnet',
+	}),
 }));
 // framer-motion and other heavy dependencies mocked as in LandingPage.keyboard.test.tsx
 // No vi.mock for courseService — it is NOT imported in this test file

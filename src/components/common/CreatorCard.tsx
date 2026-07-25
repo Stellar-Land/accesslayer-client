@@ -11,6 +11,7 @@ import {
 	Share2,
 	ExternalLink,
 } from 'lucide-react';
+import { Sparkline } from '@/components/ui/sparkline';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -357,32 +358,40 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 					</div>
 				)}
 
-				{/*  Sparkline placeholder */}
-				<div className="mt-3">
-					<div
-						role="img"
-						aria-label={priceChartAccessibility.summary}
-						aria-describedby={priceChartDescriptionId}
-						className="h-10 w-full rounded-lg bg-white/10 animate-pulse"
-					/>
-					<table id={priceChartDescriptionId} className="sr-only">
-						<caption>{priceChartAccessibility.summary}</caption>
-						<thead>
-							<tr>
-								<th scope="col">Point</th>
-								<th scope="col">Key price</th>
-							</tr>
-						</thead>
-						<tbody>
-							{priceChartAccessibility.points.map(point => (
-								<tr key={point.label}>
-									<th scope="row">{point.label}</th>
-									<td>{point.value}</td>
+			{/* Price history sparkline */}
+			{creator.priceHistory && creator.priceHistory.length >= 2 && (() => {
+				const latest = creator.priceHistory[creator.priceHistory.length - 1];
+				const earliest = creator.priceHistory[0];
+				let lineColor = '#fbbf24';
+				if (latest > earliest) lineColor = '#22c55e';
+				else if (latest < earliest) lineColor = '#ef4444';
+
+				return (
+					<div className="mt-3">
+						<Sparkline
+							data={creator.priceHistory}
+							color={lineColor}
+						/>
+						<table id={priceChartDescriptionId} className="sr-only">
+							<caption>{priceChartAccessibility.summary}</caption>
+							<thead>
+								<tr>
+									<th scope="col">Point</th>
+									<th scope="col">Key price</th>
 								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+							</thead>
+							<tbody>
+								{priceChartAccessibility.points.map(point => (
+									<tr key={point.label}>
+										<th scope="row">{point.label}</th>
+										<td>{point.value}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				);
+			})()}
 
 				<div className="mt-3 flex flex-wrap gap-2">
 					<MiniStatChip label="Price" value={keyPriceDisplay} />
