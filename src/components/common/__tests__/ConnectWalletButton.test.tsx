@@ -44,7 +44,7 @@ describe('ConnectWalletButton wallet disconnect confirmation', () => {
 	it('opens a confirmation dialog before disconnecting', () => {
 		const { disconnect } = renderConnectedWallet();
 
-		fireEvent.click(screen.getByRole('button', { name: /0x1234/i }));
+		fireEvent.click(screen.getByRole('button', { name: /0x12…5678/i }));
 
 		expect(
 			screen.getByRole('dialog', { name: /disconnect wallet/i })
@@ -55,7 +55,7 @@ describe('ConnectWalletButton wallet disconnect confirmation', () => {
 	it('disconnects when the confirmation action is clicked', () => {
 		const { disconnect } = renderConnectedWallet();
 
-		fireEvent.click(screen.getByRole('button', { name: /0x1234/i }));
+		fireEvent.click(screen.getByRole('button', { name: /0x12…5678/i }));
 		fireEvent.click(screen.getByRole('button', { name: /^disconnect$/i }));
 
 		expect(disconnect).toHaveBeenCalledTimes(1);
@@ -64,7 +64,7 @@ describe('ConnectWalletButton wallet disconnect confirmation', () => {
 	it('cancels without disconnecting', async () => {
 		const { disconnect } = renderConnectedWallet();
 
-		fireEvent.click(screen.getByRole('button', { name: /0x1234/i }));
+		fireEvent.click(screen.getByRole('button', { name: /0x12…5678/i }));
 		fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
 		await waitFor(() => {
@@ -76,7 +76,7 @@ describe('ConnectWalletButton wallet disconnect confirmation', () => {
 	it('dismisses with Escape without disconnecting', async () => {
 		const { disconnect } = renderConnectedWallet();
 
-		fireEvent.click(screen.getByRole('button', { name: /0x1234/i }));
+		fireEvent.click(screen.getByRole('button', { name: /0x12…5678/i }));
 		fireEvent.keyDown(document, { key: 'Escape' });
 
 		await waitFor(() => {
