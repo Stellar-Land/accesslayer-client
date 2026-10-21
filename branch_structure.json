@@ -1,0 +1,21 @@
+{
+  "default_branch": "dev",
+  "branches": [
+    "dev",
+    "feat/header-truncated-wallet-address",
+    "origin",
+    "wandoo"
+  ],
+  "parent": {
+    "dev": null,
+    "feat/header-truncated-wallet-address": "dev",
+    "origin": "dev",
+    "wandoo": "dev"
+  },
+  "order": [
+    "dev",
+    "feat/header-truncated-wallet-address",
+    "origin",
+    "wandoo"
+  ]
+}

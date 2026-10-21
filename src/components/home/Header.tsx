@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
+import { useAccount } from 'wagmi';
+import { shortenAddress } from '@/lib/web3/format';
 
 const navLinks = [
 	{ label: 'Marketplace', href: '/marketplace', external: false },
@@ -9,6 +11,9 @@ const navLinks = [
 
 export default function Header() {
 	const [scrolled, setScrolled] = useState(false);
+	const [showAddressPopover, setShowAddressPopover] = useState(false);
+	const popoverRef = useRef<HTMLDivElement>(null);
+	const { address, isConnected } = useAccount();
 
 	useEffect(() => {
 		const onScroll = () => {
@@ -18,6 +23,17 @@ export default function Header() {
 		window.addEventListener('scroll', onScroll, { passive: true });
 		return () => window.removeEventListener('scroll', onScroll);
 	}, []);
+
+	useEffect(() => {
+		if (!showAddressPopover) return;
+		function handleClickOutside(e: MouseEvent) {
+			if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+				setShowAddressPopover(false);
+			}
+		}
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, [showAddressPopover]);
 
 	return (
 		<header
@@ -65,17 +81,44 @@ export default function Header() {
 					)}
 				</nav>
 
-				{/* CTA */}
-				<Link
-					to="/connect"
-					className={`rounded-sm px-5 py-2 font-mono text-[10px] uppercase tracking-wider transition-all duration-300 ${
-						scrolled
-							? 'border border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-900 hover:bg-gray-900 hover:text-white'
-							: 'border border-white/15 bg-white/[0.05] text-white/60 hover:border-white/30 hover:bg-white/[0.09] hover:text-white'
-					}`}
-				>
-					Connect Wallet
-				</Link>
+				{/* CTA / Connected wallet address */}
+				{isConnected && address ? (
+					<div className="relative" ref={popoverRef}>
+						<button
+							type="button"
+							onClick={() => setShowAddressPopover((v) => !v)}
+							aria-label={`Wallet address: ${address}`}
+							data-testid="wallet-address"
+							className={`rounded-sm px-5 py-2 font-mono text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+								scrolled
+									? 'border border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-900 hover:bg-gray-900 hover:text-white'
+									: 'border border-white/15 bg-white/[0.05] text-white/60 hover:border-white/30 hover:bg-white/[0.09] hover:text-white'
+							}`}
+						>
+							{shortenAddress(address)}
+						</button>
+						{showAddressPopover && (
+							<div
+								role="dialog"
+								aria-label="Full wallet address"
+								className="absolute top-full mt-2 right-0 z-50 px-3 py-2 text-xs font-mono bg-black text-white rounded shadow-lg whitespace-nowrap"
+							>
+								<span data-testid="full-address">{address}</span>
+							</div>
+						)}
+					</div>
+				) : (
+					<Link
+						to="/connect"
+						className={`rounded-sm px-5 py-2 font-mono text-[10px] uppercase tracking-wider transition-all duration-300 ${
+							scrolled
+								? 'border border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-900 hover:bg-gray-900 hover:text-white'
+								: 'border border-white/15 bg-white/[0.05] text-white/60 hover:border-white/30 hover:bg-white/[0.09] hover:text-white'
+						}`}
+					>
+						Connect Wallet
+					</Link>
+				)}
 			</div>
 		</header>
 	);
